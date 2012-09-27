@@ -200,6 +200,7 @@ class MidiInstrument {
       MidiInstrument(const QString& txt);
       const QString& iname() const      { return _name; }
       void setIName(const QString& txt) { _name = txt; }
+      MType midiType() const;
       
       //MidiInstrument& uniqueCopy(const MidiInstrument&);
       // Assign will 'delete' all existing patches and groups from the instrument.
@@ -214,9 +215,12 @@ class MidiInstrument {
       void addSysex(SysEx* sysex)            { _sysex.append(sysex); }
       
       const DrumMap* drummap_for_patch(int patch) const;
-      QList<dumb_patchlist_entry_t> getPatches(int channel, MType songType, bool drum);
-      unsigned getNextPatch(int channel, unsigned patch, MType songType, bool drum);
-      unsigned getPrevPatch(int channel, unsigned patch, MType songType, bool drum);
+      //QList<dumb_patchlist_entry_t> getPatches(int channel, MType songType, bool drum);  // REMOVE Tim. Song type removal.
+      //unsigned getNextPatch(int channel, unsigned patch, MType songType, bool drum);     // REMOVE Tim. Song type removal.
+      //unsigned getPrevPatch(int channel, unsigned patch, MType songType, bool drum);     // REMOVE Tim. Song type removal.
+      QList<dumb_patchlist_entry_t> getPatches(int channel, bool drum);
+      unsigned getNextPatch(int channel, unsigned patch, bool drum);
+      unsigned getPrevPatch(int channel, unsigned patch, bool drum);
       
       EventList* midiInit() const            { return _midiInit; }
       EventList* midiReset() const           { return _midiReset; }
@@ -235,9 +239,12 @@ class MidiInstrument {
       virtual bool hasNativeGui() const       { return false; }
       virtual void writeToGui(const MidiPlayEvent&) {}
 
-      virtual void reset(int, MType);
-      virtual QString getPatchName(int,int,MType,bool);
-      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);
+      //virtual void reset(int, MType);        // REMOVE Tim. Song type removal.
+      virtual void reset(int); 
+      //virtual QString getPatchName(int,int,MType,bool);  // REMOVE Tim. Song type removal.
+      virtual QString getPatchName(int,int,bool);
+      //virtual void populatePatchPopup(MusEGui::PopupMenu*, int, MType, bool);  // REMOVE Tim. Song type removal.
+      virtual void populatePatchPopup(MusEGui::PopupMenu*, int, bool);
       void read(Xml&);
       void write(int level, Xml&);
       

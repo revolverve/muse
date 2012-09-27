@@ -388,8 +388,8 @@ void ArrangerView::songChanged(MusECore::SongChangedFlags_t type)
              //SC_SIG | SC_TEMPO | SC_MASTER |
              //SC_MIDI_TRACK_PROP |
              SC_CONFIG | 
-             SC_DRUMMAP| 
-             SC_SONG_TYPE)) 
+             SC_DRUMMAP)) 
+             //SC_SONG_TYPE))    // REMOVE Tim. Song type removal.
     visTracks->updateVisibleTracksButtons();
 }
       

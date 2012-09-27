@@ -75,6 +75,8 @@ MidiFile::MidiFile(FILE* f)
       {
       fp        = f;
       curPos    = 0;
+      // NOTE: This has been MT_GM for a while now. If we wish to use generic instrument 
+      //        if no midi file song type was found, change this MT_GM back to MT_UNKNOWN.
       _mtype    = MT_GM; // MT_UNKNOWN;
       _error    = MF_NO_ERROR;
       _tracks   = new MidiFileTrackList;

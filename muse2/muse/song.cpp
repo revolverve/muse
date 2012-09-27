@@ -1583,11 +1583,12 @@ PartList* Song::getSelectedWaveParts() const
       return parts;
       }
 
-void Song::setMType(MType t)
-      {
-      _mtype = t;
-      MusEGlobal::song->update(SC_SONG_TYPE);
-      }
+// REMOVE Tim. Song type removal.
+// void Song::setMType(MType t)
+//       {
+//       _mtype = t;
+//       MusEGlobal::song->update(SC_SONG_TYPE);
+//       }
 
 //---------------------------------------------------------
 //   beat
@@ -2130,7 +2131,7 @@ void Song::clear(bool signal, bool clear_all)
       recordFlag     = false;
       soloFlag       = false;
       // seq
-      _mtype         = MT_UNKNOWN;
+      //_mtype         = MT_UNKNOWN;   // REMOVE Tim. Song type removal.
       _recMode       = REC_OVERDUP;
       _cycleMode     = CYCLE_NORMAL;
       _click         = false;

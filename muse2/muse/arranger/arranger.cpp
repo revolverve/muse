@@ -268,17 +268,18 @@ Arranger::Arranger(ArrangerView* parent, const char* name)
       toolbar->addWidget(lenEntry);
       connect(lenEntry, SIGNAL(valueChanged(int)), SLOT(songlenChanged(int)));
 
-      typeBox = new LabelCombo(tr("Type"), 0);
-      typeBox->insertItem(0, tr("NO"));
-      typeBox->insertItem(1, tr("GM"));
-      typeBox->insertItem(2, tr("GS"));
-      typeBox->insertItem(3, tr("XG"));
-      typeBox->setCurrentIndex(0);
-      typeBox->setToolTip(tr("midi song type"));
-      typeBox->setWhatsThis(tr("midi song type"));
-      typeBox->setFocusPolicy(Qt::TabFocus);
-      toolbar->addWidget(typeBox);
-      connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
+// REMOVE Tim. Song type removal.      
+//       typeBox = new LabelCombo(tr("Type"), 0);
+//       typeBox->insertItem(0, tr("NO"));
+//       typeBox->insertItem(1, tr("GM"));
+//       typeBox->insertItem(2, tr("GS"));
+//       typeBox->insertItem(3, tr("XG"));
+//       typeBox->setCurrentIndex(0);
+//       typeBox->setToolTip(tr("midi song type"));
+//       typeBox->setWhatsThis(tr("midi song type"));
+//       typeBox->setFocusPolicy(Qt::TabFocus);
+//       toolbar->addWidget(typeBox);
+//       connect(typeBox, SIGNAL(activated(int)), SLOT(modeChange(int)));
 
       label = new QLabel(tr("Pitch"));
       label->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
@@ -668,8 +669,9 @@ void Arranger::songChanged(MusECore::SongChangedFlags_t type)
           lenEntry->blockSignals(false);
         }
         
-        if(type & SC_SONG_TYPE)    
-          setMode(MusEGlobal::song->mtype());
+        // REMOVE Tim. Song type removal.
+        //if(type & SC_SONG_TYPE)    
+        //  setMode(MusEGlobal::song->mtype());
           
         if(type & (SC_SELECTION | SC_TRACK_INSERTED | SC_TRACK_REMOVED | SC_TRACK_MODIFIED))
           trackSelectionChanged();
@@ -738,28 +740,30 @@ void Arranger::trackSelectionChanged()
       updateTrackInfo(-1);
       }
 
-//---------------------------------------------------------
-//   modeChange
-//---------------------------------------------------------
+// REMOVE Tim. Song type removal.
+// //---------------------------------------------------------
+// //   modeChange
+// //---------------------------------------------------------
+// 
+// void Arranger::modeChange(int mode)
+//       {
+//       MusEGlobal::song->setMType(MType(mode));
+//       updateTrackInfo(-1);
+//       focusCanvas();
+//       }
 
-void Arranger::modeChange(int mode)
-      {
-      MusEGlobal::song->setMType(MType(mode));
-      updateTrackInfo(-1);
-      focusCanvas();
-      }
-
-//---------------------------------------------------------
-//   setMode
-//---------------------------------------------------------
-
-void Arranger::setMode(int mode)
-      {
-      typeBox->blockSignals(true);
-      // This will only set if different.
-      typeBox->setCurrentIndex(mode);
-      typeBox->blockSignals(false);
-      }
+// REMOVE Tim. Song type removal.      
+// //---------------------------------------------------------
+// //   setMode
+// //---------------------------------------------------------
+// 
+// void Arranger::setMode(int mode)
+//       {
+//       typeBox->blockSignals(true);
+//       // This will only set if different.
+//       typeBox->setCurrentIndex(mode);
+//       typeBox->blockSignals(false);
+//       }
 
 //---------------------------------------------------------
 //   writeStatus

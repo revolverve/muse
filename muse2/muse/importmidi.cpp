@@ -120,25 +120,38 @@ bool MusE::importMidi(const QString name, bool merge)
       //
       //  evaluate song Type (GM, XG, GS, unknown)
       //
-      MType t = MusEGlobal::song->mtype();
-      if (!merge) {
-            t = mf.mtype();
-            MusEGlobal::song->setMType(t);
-            }
+      
+      // REMOVE Tim. Song type removal.
+      //MType midi_type = MusEGlobal::song->mtype();
+      //if (!merge) {
+      //      midi_type = mf.mtype();
+      //      MusEGlobal::song->setMType(midi_type);
+      //      }
+      MType midi_type = mf.mtype();
+      
       MusECore::MidiInstrument* instr = 0;
       for (MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) {
             MusECore::MidiInstrument* mi = *i;
-            if ((mi->iname() == "GM" && ((t == MT_UNKNOWN) || (t == MT_GM)))
-               || ((mi->iname() == "GS") && (t == MT_GS))
-               || ((mi->iname() == "XG") && (t == MT_XG))) {
+            // REMOVE Tim. Song type removal. 
+            //if ((mi->iname() == "GM" && ((midi_type == MT_UNKNOWN) || (midi_type == MT_GM)))  
+            //if ((mi->iname() == "GM" && (midi_type == MT_GM))
+            //   || ((mi->iname() == "GS") && (midi_type == MT_GS))
+            //   || ((mi->iname() == "XG") && (midi_type == MT_XG))) {
+            if(mi->midiType() == midi_type) { 
                   instr = mi;
                   break;
                   }
             }
       if (instr == 0) {
-            // the standard instrument files (GM, GS, XG) must be present
-            printf("no instrument, type %d\n", t);
-            abort();
+            // the standard instrument files (GM, GS, XG) must be present    // REMOVE Tim. Song type removal.
+            //printf("no instrument, type %d\n", midi_type);  // REMOVE Tim. Song type removal.
+            printf("file type %d, no instrument found, setting to genericMidiInstrument\n", midi_type);
+            
+            // NOTE: Midifile type has been MT_GM by default for a while. Before that, it used to be MT_UNKNOWN.
+            // So if we really wish to use generic if no midi file song type was found, change that MT_GM back to MT_UNKNOWN. 
+            instr = MusECore::genericMidiInstrument;
+            
+            //abort();   // REMOVE Tim. Song type removal.
             }
 
       MusECore::MidiFileTrackList* etl = mf.trackList();
@@ -199,7 +212,8 @@ bool MusE::importMidi(const QString name, bool merge)
                         // Comment Added by T356.
                         // Hmm. buildMidiEventList already takes care of this. 
                         // But it seems to work. How? Must test. 
-                        if (channel == 9 && MusEGlobal::song->mtype() != MT_UNKNOWN) {
+                        // if (channel == 9 && MusEGlobal::song->mtype() != MT_UNKNOWN) {   // REMOVE Tim. Song type removal.
+                        if (channel == 9 && instr->midiType() != MT_UNKNOWN) {
                            if (MusEGlobal::config.importMidiNewStyleDrum)
                               track->setType(MusECore::Track::NEW_DRUM);
                            else

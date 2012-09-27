@@ -135,7 +135,7 @@ class Arranger : public QWidget {
 
       MusECore::Track* selected;
 
-      LabelCombo* typeBox;
+      //LabelCombo* typeBox;  // REMOVE Tim. Song type removal.
       QToolButton* ib;
       int trackInfoType;
       Splitter* split;
@@ -159,7 +159,7 @@ class Arranger : public QWidget {
       void trackSelectionChanged();
       void trackInfoScroll(int);
       void songChanged(MusECore::SongChangedFlags_t);
-      void modeChange(int);
+      //void modeChange(int);  // REMOVE Tim. Song type removal.
       void setTime(unsigned);
       void globalPitchChanged(int);
       void globalTempoChanged(int);
@@ -216,7 +216,7 @@ class Arranger : public QWidget {
       Arranger(ArrangerView* parent, const char* name = 0);
 
       PartCanvas* getCanvas() { return canvas; }
-      void setMode(int);
+      //void setMode(int);   // REMOVE Tim. Song type removal.
       void reset();
       
       void writeStatus(int level, MusECore::Xml&);

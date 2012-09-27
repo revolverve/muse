@@ -83,12 +83,13 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
             int lb = (b >> 8) & 0xff;
             int pr = b & 0x7f;
             int tickoffset = 0;
-            switch(MusEGlobal::song->mtype()) {
-                  case MT_GM:       // no HBANK/LBANK
-                        break;
-                  case MT_GS:
-                  case MT_XG:
-                  case MT_UNKNOWN:
+            // REMOVE Tim. Song type removal.
+            //switch(MusEGlobal::song->mtype()) {
+            //      case MT_GM:       // no HBANK/LBANK
+            //            break;
+            //      case MT_GS:
+            //      case MT_XG:
+            //      case MT_UNKNOWN:
                         if (hb != 0xff) {
                               l->add(MidiPlayEvent(tick, port, channel, ME_CONTROLLER, CTRL_HBANK, hb));
                               ++tickoffset;
@@ -97,8 +98,8 @@ static void addController(MPEventList* l, int tick, int port, int channel, int a
                               l->add(MidiPlayEvent(tick+tickoffset, port, channel, ME_CONTROLLER, CTRL_LBANK, lb));
                               ++tickoffset;
                               }
-                        break;
-                  }
+            //            break;
+            //      }
             l->add(MidiPlayEvent(tick+tickoffset, port, channel, ME_PROGRAM, pr, 0));
             }
       else if (a < CTRL_NRPN14_OFFSET) {     // RPN14 Controller
@@ -216,21 +217,25 @@ void MusE::exportMidi()
                   //    Write Songtype SYSEX: GM/GS/XG
                   //
 
-                  switch(MusEGlobal::song->mtype()) {
-                        case MT_GM:
-                              l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
-                              break;
-                        case MT_GS:
-                              l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
-                              l->add(MusECore::MidiPlayEvent(250, port, MusECore::ME_SYSEX, MusECore::gsOnMsg, MusECore::gsOnMsgLen));
-                              break;
-                        case MT_XG:
-                              l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
-                              l->add(MusECore::MidiPlayEvent(250, port, MusECore::ME_SYSEX, MusECore::xgOnMsg, MusECore::xgOnMsgLen));
-                              break;
-                        case MT_UNKNOWN:
-                              break;
-                        }
+                  // REMOVE Tim. Song type removal. FIXME TODO What now? All sysexex should be part events?
+                  // Or possibly store the instrument's init event list sysexs?
+                  // Seems that something really should go here to replace this...
+                  //
+//                   switch(MusEGlobal::song->mtype()) {
+//                         case MT_GM:
+//                               l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
+//                               break;
+//                         case MT_GS:
+//                               l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
+//                               l->add(MusECore::MidiPlayEvent(250, port, MusECore::ME_SYSEX, MusECore::gsOnMsg, MusECore::gsOnMsgLen));
+//                               break;
+//                         case MT_XG:
+//                               l->add(MusECore::MidiPlayEvent(0, port, MusECore::ME_SYSEX, MusECore::gmOnMsg, MusECore::gmOnMsgLen));
+//                               l->add(MusECore::MidiPlayEvent(250, port, MusECore::ME_SYSEX, MusECore::xgOnMsg, MusECore::xgOnMsgLen));
+//                               break;
+//                         case MT_UNKNOWN:
+//                               break;
+//                         }
 
                   //---------------------------------------------------
                   //    Write Tempomap
@@ -407,7 +412,7 @@ void MusE::exportMidi()
             
             }
       mf.setDivision(MusEGlobal::config.midiDivision);
-      mf.setMType(MusEGlobal::song->mtype());
+      //mf.setMType(MusEGlobal::song->mtype());  // REMOVE Tim. Song type removal.
       mf.setTrackList(mtl, i);
       mf.write();
       

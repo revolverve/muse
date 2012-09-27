@@ -937,8 +937,9 @@ void Song::read(Xml& xml, bool isTemplate)
                               setRecord(xml.parseInt());
                         else if (tag == "solo")
                               soloFlag = xml.parseInt();
-                        else if (tag == "type")
-                              _mtype  = MType(xml.parseInt());
+                        else if (tag == "type")          // Obsolete.  
+                              //_mtype  = MType(xml.parseInt());   // REMOVE Tim. Song type removal.
+                              xml.parseInt();
                         else if (tag == "recmode")
                               _recMode  = xml.parseInt();
                         else if (tag == "cycle")
@@ -1088,7 +1089,7 @@ void Song::write(int level, Xml& xml) const
       xml.intTag(level, "punchout", punchoutFlag);
       xml.intTag(level, "record", recordFlag);
       xml.intTag(level, "solo", soloFlag);
-      xml.intTag(level, "type", _mtype);
+      //xml.intTag(level, "type", _mtype);      // REMOVE Tim. Song type removal.
       xml.intTag(level, "recmode", _recMode);
       xml.intTag(level, "cycle", _cycleMode);
       xml.intTag(level, "click", _click);

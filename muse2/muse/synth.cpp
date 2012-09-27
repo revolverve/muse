@@ -863,11 +863,13 @@ void SynthI::read(Xml& xml)
 //   getPatchName
 //---------------------------------------------------------
 
-const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool drum)
+//const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool drum)  // REMOVE Tim. Song type removal.
+const char* MessSynthIF::getPatchName(int channel, int prog, bool drum)
       {
         if (_mess)
         {
-              const char* s = _mess->getPatchName(channel, prog, type, drum);
+              //const char* s = _mess->getPatchName(channel, prog, type, drum); // REMOVE Tim. Song type removal.
+              const char* s = _mess->getPatchName(channel, prog, drum); 
               if(s)
                 return s;
         }      
@@ -878,7 +880,8 @@ const char* MessSynthIF::getPatchName(int channel, int prog, MType type, bool dr
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void MessSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int ch, MType, bool)
+//void MessSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int ch, MType, bool) // REMOVE Tim. Song type removal.
+void MessSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int ch, bool)
       {
       menu->clear();
       const MidiPatch* mp = _mess->getPatchInfo(ch, 0);

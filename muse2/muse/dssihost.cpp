@@ -2114,7 +2114,8 @@ void DssiSynthIF::doSelectProgram(LADSPA_Handle handle, int bank, int prog)
 //   getPatchName
 //---------------------------------------------------------
 
-const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, MType /*type*/, bool /*drum*/)
+//const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, MType /*type*/, bool /*drum*/)  // REMOVE Tim. Song type removal.
+const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, bool /*drum*/)
       {
       unsigned program = prog & 0x7f;
       int lbank   = (prog >> 8) & 0xff;
@@ -2138,7 +2139,8 @@ const char* DssiSynthIF::getPatchName(int /*chan*/, int prog, MType /*type*/, bo
 //   populatePatchPopup
 //---------------------------------------------------------
 
-void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, MType /*type*/, bool /*drum*/)
+//void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, MType /*type*/, bool /*drum*/) // REMOVE Tim. Song type removal.
+void DssiSynthIF::populatePatchPopup(MusEGui::PopupMenu* menu, int /*ch*/, bool /*drum*/) 
       {
       // The plugin can change the programs, patches etc.
       // So make sure we're up to date by calling queryPrograms.

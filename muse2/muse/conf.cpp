@@ -1087,7 +1087,8 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                   //  or ALSA reorders or renames devices etc etc, then we have at least kept the track <-> port routes.
                      mport->defaultInChannels() != (1<<MIDI_CHANNELS)-1 ||   // p4.0.17 Default is now to connect to all channels.
                      mport->defaultOutChannels() ||
-                     (!mport->instrument()->iname().isEmpty() && mport->instrument()->iname() != "GM") ||
+                     //(!mport->instrument()->iname().isEmpty() && mport->instrument()->iname() != "GM") ||   // REMOVE Tim. Song type removal.
+                     (!mport->instrument()->iname().isEmpty() && mport->instrument()->midiType() != MT_GM) ||
                      !mport->syncInfo().isDefault()) 
                     used = true;  
                   else  
@@ -1114,7 +1115,8 @@ static void writeSeqConfiguration(int level, Xml& xml, bool writePortInfo)
                     xml.intTag(level, "defaultOutChans", mport->defaultOutChannels());
                   
                   if(!mport->instrument()->iname().isEmpty() &&                      // Tim.
-                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable.
+                     (mport->instrument()->iname() != "GM"))                         // FIXME: TODO: Make this user configurable. 
+                     //(mport->instrument()->midiType() != MT_GM))
                     xml.strTag(level, "instrument", mport->instrument()->iname());
                     
                   if (dev) {

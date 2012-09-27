@@ -1,3 +1,13 @@
+27.09.2012:
+         * Song type is now removed: Testing... first commit, more likely to come.  (Tim)
+           Midi import tested seems OK so far with GM, GS, and XG files.
+           TODO: Exporting song type sysex - use instrument init list instead? Or store with parts? (Nah!)
+                 Or if all ports used in song are GM, GS, or XG, use those instead? 
+                 What about mixed? Try to use 'switch port' meta event to help?
+           TODO: Instrument init sequences. Need some kind of editor. Need timing mechanism while in 'stop' mode. 
+                 Was thinking these events should be in FRAMES or real time - not affected by tempo. Jack slow sync 
+                  callback might help. (Also try to re-enable metronome precount - similar concept here!)
+           TODO: Verify patches popup/boxes display for proper operation. And everything else, bugs, CLEANUP etc...
 17.09.2012:
          * Introducing: Copy On Write for waves. (Tim)
            It asks to copy, to the Project Directory, any wave to be modified which is either 

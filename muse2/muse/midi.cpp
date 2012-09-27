@@ -633,46 +633,49 @@ void Audio::initDevices()
                   activePorts[i] = false;  // no standard initialization
                   }
             }
-      //
-      // First all ports are initialized to GM and then are changed
-      // to XG/GS in order to prevent that devices with more than one
-      // port, e.g. Korg NS5R, toggle between GM and XG/GS several times.
-      //
-      // Standard initialization...
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-            if (!activePorts[i])
-                  continue;
-            MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
-            switch(MusEGlobal::song->mtype()) {
-                  case MT_GS:
-                  case MT_UNKNOWN:
-                        break;
-                  case MT_GM:
-                  case MT_XG:
-                        port->sendGmOn();
-                        break;
-                  }
-            }
-      for (int i = 0; i < MIDI_PORTS; ++i) {
-            if (!activePorts[i])
-                  continue;
-            MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
-            switch(MusEGlobal::song->mtype()) {
-                  case MT_UNKNOWN:
-                        break;
-                  case MT_GM:
-                        port->sendGmInitValues();
-                        break;
-                  case MT_GS:
-                        port->sendGsOn();
-                        port->sendGsInitValues();
-                        break;
-                  case MT_XG:
-                        port->sendXgOn();
-                        port->sendXgInitValues();
-                        break;
-                  }
-            }
+      
+// REMOVE Tim. Song type removal.      
+//       // First all ports are initialized to GM and then are changed
+//       // to XG/GS in order to prevent that devices with more than one
+//       // port, e.g. Korg NS5R, toggle between GM and XG/GS several times.
+//       //
+//       // Standard initialization...
+//       for (int i = 0; i < MIDI_PORTS; ++i) {
+//             if (!activePorts[i])
+//                   continue;
+//             MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
+//             switch(MusEGlobal::song->mtype()) {
+//                   case MT_GS:
+//                   case MT_UNKNOWN:
+//                         break;
+//                   case MT_GM:
+//                   case MT_XG:
+//                         port->sendGmOn();
+//                         break;
+//                   }
+//             }
+            
+// REMOVE Tim. Song type removal.            
+//       for (int i = 0; i < MIDI_PORTS; ++i) {
+//             if (!activePorts[i])
+//                   continue;
+//             MusECore::MidiPort* port = &MusEGlobal::midiPorts[i];
+//             switch(MusEGlobal::song->mtype()) {
+//                   case MT_UNKNOWN:
+//                         break;
+//                   case MT_GM:
+//                         port->sendGmInitValues();
+//                         break;
+//                   case MT_GS:
+//                         port->sendGsOn();
+//                         port->sendGsInitValues();
+//                         break;
+//                   case MT_XG:
+//                         port->sendXgOn();
+//                         port->sendXgInitValues();
+//                         break;
+//                   }
+//             }
       }
 
 //---------------------------------------------------------
