@@ -13,7 +13,7 @@
         <event tick="0" type="2" datalen="4"> 
             7e 7f 09 01           
             </event>
-        <event tick="0" type="2" datalen="7">
+        <event tick="250" type="2" datalen="7">
             43 10 4c 00 00 7e 00           
             </event>
       </Init>
