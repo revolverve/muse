@@ -98,6 +98,7 @@ class AudioDevice;
 #define SC_MIDI_CONTROLLER_ADD 0x8000000   // a hardware midi controller was added or deleted
 #define SC_MIDI_TRACK_PROP     0x10000000   // a midi track's properties changed (channel, compression etc)
 #define SC_KEY                 0x40000000   // key map changed
+#define SC_EVERYTHING          -1           // global update
 
 #define REC_NOTE_FIFO_SIZE    16
 

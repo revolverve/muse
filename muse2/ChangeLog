@@ -1,6 +1,12 @@
 08.10.2012:
-         More Song Type removal and midi import/export work, and other fixes: (Tim) 
-         * Improved: Multi-port (aka multi-channel) midi import and export, via Device Name, Port, or Instrument metas.
+         * Song type is now removed: (Tim)
+           Midi import tested seems OK so far with GM, GS, and XG files.
+           TODO: Instrument init sequences. Need some kind of editor. Need timing mechanism while in 'stop' mode. 
+                 Was thinking these events should be in FRAMES or real time - not affected by tempo. Jack slow sync 
+                  callback might help. (Also try to re-enable metronome precount - similar concept here!)
+           TODO: Verify patches popup/boxes display for proper operation. And everything else, bugs, CLEANUP etc...
+           
+         * Improved: Multi-port (aka multi-channel) midi import and export, via Device Name, Port, or Instrument metas. (Tim)
            - MusE can now export a midi file and re-import exactly as it was, all ports + devices + instruments incl.
            - Extra options for import/export added.
            - Import midi now passes 'unabsorbed' meta events on to the track. They were discarded before - lost forever.
@@ -10,13 +16,27 @@
          - Old bug: Fixed superfluous NULLS in meta texts in midi export.
          - Old bug, annoying: Midi Import: parts are too short and 'events past end' indicator is on.
          - TODO: Bug: Deicsonze: Midi track info patch popup: Screen all black until esc or click.
-27.09.2012:
-         * Song type is now removed: Testing... first commit, more likely to come.  (Tim)
-           Midi import tested seems OK so far with GM, GS, and XG files.
-           TODO: Instrument init sequences. Need some kind of editor. Need timing mechanism while in 'stop' mode. 
-                 Was thinking these events should be in FRAMES or real time - not affected by tempo. Jack slow sync 
-                  callback might help. (Also try to re-enable metronome precount - similar concept here!)
-           TODO: Verify patches popup/boxes display for proper operation. And everything else, bugs, CLEANUP etc...
+04.10.2012:
+         - Added Gain knob on channel strip for audio tracks (rj)
+         - Added descriptive tooltips for midi parameters in midi track info (rj)
+03.10.2012:
+         - Changed WaveTrack and AudioInput to create mono tracks, AudioInputs
+           are also no longer muted upon creation (rj)
+02.10.2012:
+         - Added descriptive tooltip to cursor mode in drum editor (rj)
+01.10.2012:
+         - Fixed Step shortcuts 0,9 in drum editor so they actually update 
+           the step size and fixed update of controller view when stepping 
+           up and down (rj)
+30.09.2012:
+         - Added part creation from wave editor - to make this really usable
+           more functions to set tempo etc, are needed (rj)
+         - Fixed name length of Aux ports and added index (rj)
+         - Fixed issue with moving aux:es in the track list causing the auxes
+           to be mixed up (rj)
+29.09.2012:
+         - Added handling of missing soundfonts in fluidsynth load so
+           a dialog asking for replacement soundfont pops up (rj)
 17.09.2012:
          * Introducing: Copy On Write for waves. (Tim)
            It asks to copy, to the Project Directory, any wave to be modified which is either 

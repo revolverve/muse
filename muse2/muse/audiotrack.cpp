@@ -40,6 +40,7 @@
 #include "dssihost.h"
 #include "app.h"
 #include "controlfifo.h"
+#include "fastlog.h"
 
 namespace MusECore {
 
@@ -123,6 +124,7 @@ AudioTrack::AudioTrack(TrackType t)
       bufferPos = INT_MAX;
       
       setVolume(1.0);
+      _gain = 1.0;
       }
 
 AudioTrack::AudioTrack(const AudioTrack& t, int flags)
@@ -802,6 +804,24 @@ void AudioTrack::setPan(double val)
       }
 
 //---------------------------------------------------------
+//   pan
+//---------------------------------------------------------
+
+double AudioTrack::gain() const
+      {
+        return _gain;
+      }
+
+//---------------------------------------------------------
+//   setPan
+//---------------------------------------------------------
+
+void AudioTrack::setGain(double val)
+      {
+        _gain = val;
+      }
+
+//---------------------------------------------------------
 //   pluginCtrlVal
 //---------------------------------------------------------
 
@@ -832,6 +852,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
         {
           if(type() == AUDIO_SOFTSYNTH)
           {
+#ifdef DSSI_SUPPORT            
             const SynthI* synth = static_cast<const SynthI*>(this);
             if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
             {
@@ -844,6 +865,7 @@ double AudioTrack::pluginCtrlVal(int ctlID) const
                 en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
               }
             }
+#endif
           }
         }
       }  
@@ -888,6 +910,7 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
     {
       if(type() == AUDIO_SOFTSYNTH)
       {
+ #ifdef DSSI_SUPPORT
         const SynthI* synth = static_cast<const SynthI*>(this);
         if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
         {
@@ -899,6 +922,7 @@ bool AudioTrack::addScheduledControlEvent(int track_ctrl_id, float val, unsigned
             return dssi_sif->addScheduledControlEvent(in_ctrl_idx, val, frame);
           }
         }
+ #endif
       }
     }
   }  
@@ -930,6 +954,7 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
     {
       if(type() == AUDIO_SOFTSYNTH)
       {
+#ifdef DSSI_SUPPORT        
         SynthI* synth = static_cast<SynthI*>(this);
         if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
         {
@@ -941,6 +966,7 @@ void AudioTrack::enableController(int track_ctrl_id, bool en)
             dssi_sif->enableController(in_ctrl_idx, en);
           }
         }
+#endif
       }
     }
   }  
@@ -977,6 +1003,7 @@ void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) con
         {
           if(type() == AUDIO_SOFTSYNTH)
           {
+#ifdef DSSI_SUPPORT
             const SynthI* synth = static_cast<const SynthI*>(this);
             if(synth->synth() && synth->synth()->synthType() == Synth::DSSI_SYNTH)
             {
@@ -989,6 +1016,7 @@ void AudioTrack::controllersEnabled(int track_ctrl_id, bool* en1, bool* en2) con
                 en_2 = dssi_sif->controllerEnabled2(in_ctrl_idx);
               }
             }
+#endif
           }
         }
       }  
@@ -1076,6 +1104,7 @@ void AudioTrack::writeProperties(int level, Xml& xml) const
       xml.intTag(level, "prefader", prefader());
       xml.intTag(level, "sendMetronome", sendMetronome());
       xml.intTag(level, "automation", int(automationType()));
+      xml.floatTag(level, "gain", _gain);
       if (hasAuxSend()) {
             int naux = MusEGlobal::song->auxs()->size();
             for (int idx = 0; idx < naux; ++idx) {
@@ -1159,6 +1188,8 @@ bool AudioTrack::readProperties(Xml& xml, const QString& tag)
             _prefader = xml.parseInt();
       else if (tag == "sendMetronome")
             _sendMetronome = xml.parseInt();
+      else if (tag == "gain")
+            _gain = xml.parseFloat();
       else if (tag == "automation")
             setAutomationType(AutomationType(xml.parseInt()));
       else if (tag == "controller") {
@@ -1435,7 +1466,7 @@ AudioInput::AudioInput()
    : AudioTrack(AUDIO_INPUT)
       {
       // set Default for Input Ports:
-      _mute = true;
+      setChannels(1);
       for (int i = 0; i < MAX_CHANNELS; ++i)
             jackPorts[i] = 0;
       }
@@ -1702,8 +1733,31 @@ void AudioAux::write(int level, Xml& xml) const
       {
       xml.tag(level++, "AudioAux");
       AudioTrack::writeProperties(level, xml);
+      xml.intTag(level, "index", _index);
       xml.etag(level, "AudioAux");
       }
+
+
+//---------------------------------------------------------
+//   getNextAuxIndex
+//---------------------------------------------------------
+int getNextAuxIndex()
+{
+    printf("getNextAuxIndex!\n");
+    int curAux=0;
+    AuxList * al = MusEGlobal::song->auxs();
+    for (MusECore::iAudioAux i = al->begin(); i != al->end(); ++i)
+    {
+        MusECore::AudioAux* ax = *i;
+        printf("ax index %d\n", ax->index());
+        if (ax->index() > curAux)
+        {
+            printf("found new index! %d\n", ax->index());
+            curAux = ax->index();
+        }
+    }
+    return curAux+1;
+}
 
 //---------------------------------------------------------
 //   AudioAux
@@ -1712,25 +1766,27 @@ void AudioAux::write(int level, Xml& xml) const
 AudioAux::AudioAux()
    : AudioTrack(AUDIO_AUX)
 {
+      _index = getNextAuxIndex();
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
           posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
         else
           buffer[i] = 0;
-      }  
+      }
 }
 
 AudioAux::AudioAux(const AudioAux& t, int flags)
    : AudioTrack(t, flags)
 {
+      _index = getNextAuxIndex();
       for(int i = 0; i < MAX_CHANNELS; ++i)
       {
         if(i < channels())
           posix_memalign((void**)(buffer + i), 16, sizeof(float) * MusEGlobal::segmentSize);
         else
           buffer[i] = 0;
-      }  
+      }
 }
 //---------------------------------------------------------
 //   AudioAux
@@ -1758,7 +1814,9 @@ void AudioAux::read(Xml& xml)
                   case Xml::End:
                         return;
                   case Xml::TagStart:
-                        if (AudioTrack::readProperties(xml, tag))
+                      if (tag == "index")
+                        _index = xml.parseInt();
+                      else if (AudioTrack::readProperties(xml, tag))
                               xml.unknown("AudioAux");
                         break;
                   case Xml::Attribut:
@@ -1828,6 +1886,15 @@ void AudioAux::setChannels(int n)
     }
   }
   AudioTrack::setChannels(n);
+}
+
+//---------------------------------------------------------
+//   setName
+//---------------------------------------------------------
+
+QString AudioAux::auxName()
+{
+    return  QString("%1:").arg(index())+ name();
 }
 
 //---------------------------------------------------------

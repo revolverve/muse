@@ -351,6 +351,7 @@ class AudioTrack : public Track {
       bool _sendMetronome;
       AutomationType _automationType;
       Pipeline* _efxPipe;
+      double _gain;
       void internal_assign(const Track&, int flags);
 
    protected:
@@ -421,6 +422,8 @@ class AudioTrack : public Track {
       void setVolume(double val);
       double pan() const;
       void setPan(double val);
+      double gain() const;
+      void setGain(double val);
 
       bool prefader() const              { return _prefader; }
       double auxSend(int idx) const;
@@ -560,6 +563,7 @@ class AudioGroup : public AudioTrack {
 class AudioAux : public AudioTrack {
       float* buffer[MAX_CHANNELS];
       static bool _isVisible;
+      int _index;
    public:
       AudioAux();
       AudioAux(const AudioAux& t, int flags);
@@ -575,6 +579,8 @@ class AudioAux : public AudioTrack {
       static  void setVisible(bool t) { _isVisible = t; }
       virtual int height() const;
       static bool visible() { return _isVisible; }
+      virtual QString auxName();
+      virtual int index() { return _index; }
     };
 
 
@@ -588,7 +594,7 @@ class WaveTrack : public AudioTrack {
 
    public:
 
-      WaveTrack() : AudioTrack(Track::WAVE) {  }
+      WaveTrack() : AudioTrack(Track::WAVE) { setChannels(1); }
       WaveTrack(const WaveTrack& wt, int flags) : AudioTrack(wt, flags) {}
 
       virtual WaveTrack* clone(int flags) const    { return new WaveTrack(*this, flags); }
