@@ -49,8 +49,6 @@ namespace MusECore {
 MidiInstrumentList midiInstruments;
 MidiInstrument* genericMidiInstrument;
 
-//static const char* gmdrumname = "GM-drums";  // REMOVE Tim. Song type removal.
-
 //---------------------------------------------------------
 //   string2sysex
 //   Return -1 if cannot be converted.
@@ -369,7 +367,7 @@ MidiInstrument::~MidiInstrument()
 MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
 {
   //---------------------------------------------------------
-  // TODO: Copy the _initScript, and _midiInit, _midiReset, and _midiState lists. 
+  // TODO: Copy the _initScript (if and when it is ever used)
   //---------------------------------------------------------
   
   for(iMidiController i = _controller->begin(); i != _controller->end(); ++i) 
@@ -398,6 +396,10 @@ MidiInstrument& MidiInstrument::assign(const MidiInstrument& ins)
     for(int i = 0; i < j; ++i)
       _sysex.append(new MusECore::SysEx(*(ins.sysex().at(i))));
   }
+  
+  *(_midiInit) = *(ins._midiInit);
+  *(_midiReset) = *(ins._midiReset);
+  *(_midiState) = *(ins._midiState);
   
   for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) 
   {
@@ -467,7 +469,6 @@ MType MidiInstrument::midiType() const
 //    send note off to all channels
 //---------------------------------------------------------
 
-//void MidiInstrument::reset(int portNo, MType) // REMOVE Tim. Song type removal.
 void MidiInstrument::reset(int portNo)
 {
       MusECore::MidiPort* port = &MusEGlobal::midiPorts[portNo];
@@ -998,10 +999,6 @@ void MidiInstrument::write(int level, Xml& xml)
       }  
       xml.put(">");
 
-      // -------------
-      // TODO: What about Init, Reset, State, and InitScript ?
-      // -------------
-      
       level++;
       for (ciPatchGroup g = pg.begin(); g != pg.end(); ++g) {
             PatchGroup* pgp = *g;
@@ -1022,6 +1019,15 @@ void MidiInstrument::write(int level, Xml& xml)
           _sysex.at(i)->write(level, xml);
       }
       
+      xml.tag(level++, "Init");
+      for(ciEvent ev=_midiInit->begin(); ev != _midiInit->end(); ++ev)
+        ev->second.write(level, xml, MusECore::Pos(0, true));
+      xml.etag(--level, "Init");
+      
+      // -------------
+      // TODO: What about _midiReset, _midiState, and _initScript ?
+      // -------------
+      
       writeDrummaps(level, xml);
       
       level--;
@@ -1035,30 +1041,10 @@ void MidiInstrument::write(int level, Xml& xml)
 //   populatePatchPopup
 //---------------------------------------------------------
 
-//void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int chan, MType songType, bool drum) // REMOVE Tim. Song type removal.
 void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, bool drum)
       {
       menu->clear();
-      //int mask = 0;  // REMOVE Tim. Song type removal.
       int mask = 7; 
-      //bool drumchan = chan == 9;   // REMOVE Tim. Song type removal.
-
-// REMOVE Tim. Song type removal.
-//       switch (songType) {
-//             case MT_XG: mask = 4; break;
-//             case MT_GS: mask = 2; break;
-//             case MT_GM: 
-//               if(drumchan)
-//               {
-//                 int id = (0xff << 16) + (0xff << 8) + 0x00;  // First patch
-//                 QAction* act = menu->addAction(gmdrumname);
-//                 act->setData(id);
-//                 return;
-//               }  
-//               mask = 1; 
-//               break;
-//             case MT_UNKNOWN:  mask = 7; break;
-//             }
       
       if (pg.size() > 1) {
             for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
@@ -1070,9 +1056,6 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, 
                   for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                         const Patch* mp = *ipl;
                         if ((mp->typ & mask) && 
-                            //((drum && songType != MT_GM) ||    // REMOVE Tim. Song type removal.
-                            //(drum || 
-                            //(mp->drum == drumchan)) )            // REMOVE Tim. Song type removal. Possibly remove this, it's not in evolution.
                             (mp->drum == drum))
                             {
                               int id = ((mp->hbank & 0xff) << 16)
@@ -1106,7 +1089,6 @@ void MidiInstrument::populatePatchPopup(MusEGui::PopupMenu* menu, int /*chan*/, 
 //   getPatchName
 //---------------------------------------------------------
 
-//QString MidiInstrument::getPatchName(int channel, int prog, MType mode, bool drum)  // REMOVE Tim. Song type removal.
 QString MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum)
       {
       int pr = prog & 0xff;
@@ -1116,31 +1098,6 @@ QString MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum)
       int hbank = (prog >> 16) & 0xff;
       int lbank = (prog >> 8) & 0xff;
       int tmask = 1;
-      //bool drumchan = channel == 9;   // REMOVE Tim. Song type removal.
-      
-// REMOVE Tim. Song type removal.      
-//       bool hb = false;
-//       bool lb = false;
-//       switch (mode) {
-//             case MT_GS:
-//                   tmask = 2;
-//                   hb    = true;
-//                   break;
-//             case MT_XG:
-//                   hb    = true;
-//                   lb    = true;
-//                   tmask = 4;
-//                   break;
-//             case MT_GM:
-//                   if(drumchan)
-//                         return gmdrumname;
-//                   tmask = 1;
-//                   break;
-//             default:
-//                   hb    = true;     // MSB bank matters
-//                   lb    = true;     // LSB bank matters
-//                   break;
-//             }
       
       bool hb = hbank != 0xff;
       bool lb = lbank != 0xff;
@@ -1150,9 +1107,6 @@ QString MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum)
                   const Patch* mp = *ipl;
                   if ((mp->typ & tmask)
                     && (pr == mp->prog)
-                    //&& ((drum && mode != MT_GM) ||   // REMOVE Tim. Song type removal.
-                    //&& (drum || 
-                    //   (mp->drum == drumchan))   // REMOVE Tim. Song type removal. Possibly remove this, it's not in evolution.
                     && (mp->drum == drum) 
                     
                     && (hbank == mp->hbank || !hb || mp->hbank == -1)
@@ -1163,15 +1117,8 @@ QString MidiInstrument::getPatchName(int /*channel*/, int prog, bool drum)
       return "<unknown>";
       }
 
-
-
-
-
-
-//unsigned MidiInstrument::getNextPatch(int channel, unsigned patch, MType songType, bool drum) // REMOVE Tim. Song type removal.
 unsigned MidiInstrument::getNextPatch(int channel, unsigned patch, bool drum)
 {
-  //QList<dumb_patchlist_entry_t> haystack=getPatches(channel,songType,drum); // REMOVE Tim. Song type removal.
   QList<dumb_patchlist_entry_t> haystack=getPatches(channel,drum);
   if (haystack.empty()) return MusECore::CTRL_VAL_UNKNOWN;
   
@@ -1201,10 +1148,8 @@ unsigned MidiInstrument::getNextPatch(int channel, unsigned patch, bool drum)
          ((((it->hbank==-1)?0xFF:it->hbank)<<16)&0xFF0000);
 }
 
-//unsigned MidiInstrument::getPrevPatch(int channel, unsigned patch, MType songType, bool drum)  // REMOVE Tim. Song type removal.
 unsigned MidiInstrument::getPrevPatch(int channel, unsigned patch, bool drum)
 {
-  //QList<dumb_patchlist_entry_t> haystack=getPatches(channel,songType,drum);  // REMOVE Tim. Song type removal.
   QList<dumb_patchlist_entry_t> haystack=getPatches(channel,drum);
   if (haystack.empty()) return MusECore::CTRL_VAL_UNKNOWN;
   
@@ -1232,40 +1177,9 @@ unsigned MidiInstrument::getPrevPatch(int channel, unsigned patch, bool drum)
          ((((it->hbank==-1)?0xFF:it->hbank)<<16)&0xFF0000);
 }
 
-//QList<dumb_patchlist_entry_t> MidiInstrument::getPatches(int channel, MType mode, bool drum) // REMOVE Tim. Song type removal.
 QList<dumb_patchlist_entry_t> MidiInstrument::getPatches(int /*channel*/, bool drum)
       {
       int tmask = 1;
-      //bool drumchan = channel == 9;   // REMOVE Tim. Song type removal.
-      
-// REMOVE Tim. Song type removal.      
-//       bool hb = false;
-//       bool lb = false;
-//       switch (mode) {
-//             case MT_GS:
-//                   tmask = 2;
-//                   hb    = true;
-//                   break;
-//             case MT_XG:
-//                   hb    = true;
-//                   lb    = true;
-//                   tmask = 4;
-//                   break;
-//             case MT_GM:
-//                   if(drumchan)
-//                   {
-//                     QList<dumb_patchlist_entry_t> tmp;
-//                     tmp.push_back(dumb_patchlist_entry_t(0,-1,-1));
-//                   }
-//                   else
-//                     tmask = 1;
-//                   break;
-//             default:
-//                   hb    = true;     // MSB bank matters
-//                   lb    = true;     // LSB bank matters
-//                   break;
-//             }
-      
       QList<dumb_patchlist_entry_t> tmp;
       
       for (ciPatchGroup i = pg.begin(); i != pg.end(); ++i) {
@@ -1273,14 +1187,9 @@ QList<dumb_patchlist_entry_t> MidiInstrument::getPatches(int /*channel*/, bool d
             for (ciPatch ipl = pl.begin(); ipl != pl.end(); ++ipl) {
                   const Patch* mp = *ipl;
                   if ((mp->typ & tmask) && 
-                      //((drum && mode != MT_GM) ||     // REMOVE Tim. Song type removal.
-                      //(drum || 
-                      //(mp->drum == drumchan)) )         // REMOVE Tim. Song type removal. Possibly remove this, it's not in evolution.
                       (mp->drum == drum))               
                   {
                     int prog = mp->prog;
-                    //int lbank = (mp->lbank==-1 || !lb) ? -1 : mp->lbank;    // REMOVE Tim. Song type removal.
-                    //int hbank = (mp->hbank==-1 || !hb) ? -1 : mp->hbank;    // REMOVE Tim. Song type removal.
                     int lbank = mp->lbank;
                     int hbank = mp->hbank;
                     tmp.push_back(dumb_patchlist_entry_t(prog,lbank,hbank));

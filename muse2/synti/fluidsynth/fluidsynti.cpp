@@ -1187,7 +1187,6 @@ void FluidSynth::rewriteChannelSettings()
 //---------------------------------------------------------
 //   getPatchName
 //---------------------------------------------------------
-//const char* FluidSynth::getPatchName(int i, int, int, bool /*drum*/) const  // REMOVE Tim. Song type removal.
 const char* FluidSynth::getPatchName(int i, int, bool /*drum*/) const
       {
       if (channels[i].font_intid == FS_UNSPECIFIED_FONT ||

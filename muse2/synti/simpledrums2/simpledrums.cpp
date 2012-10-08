@@ -647,7 +647,6 @@ bool SimpleSynth::sysex(int len, const unsigned char* d)
     \return const char* with patchname
  */
 //---------------------------------------------------------
-//const char* SimpleSynth::getPatchName(int /*index*/, int, int) const  // REMOVE Tim. Song type removal.
 const char* SimpleSynth::getPatchName(int /*index*/, int, bool) const
       {
       SS_TRACE_IN

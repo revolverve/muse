@@ -405,7 +405,6 @@ bool ISynth::processEvent(const MusECore::MidiPlayEvent& ev)
 //   getPatchName
 //---------------------------------------------------------
 
-//const char* ISynth::getPatchName(int /*ch*/, int val, int, bool /*drum*/) const // REMOVE Tim. Song type removal.
 const char* ISynth::getPatchName(int /*ch*/, int val, bool /*drum*/) const
       {
       int prog =   val & 0xff;

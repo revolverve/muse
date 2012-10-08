@@ -93,10 +93,7 @@ class VstSynthIF : public SynthIF
       virtual int totalOutChannels() const;
       virtual int totalInChannels() const;
       virtual void deactivate3();
-      //virtual const char* getPatchName(int, int, int, bool) const { return ""; }  // REMOVE Tim. Song type removal.
-      //virtual const char* getPatchName(int, int, MType, bool) { return ""; }      // REMOVE Tim. Song type removal.  
       virtual const char* getPatchName(int, int, bool) { return ""; }
-      //virtual void populatePatchPopup(PopupMenu*, int, MType, bool) {};           // REMOVE Tim. Song type removal.
       virtual void populatePatchPopup(PopupMenu*, int, bool) {};
       virtual void write(int level, Xml& xml) const;
       virtual float getParameter(unsigned long idx) const;

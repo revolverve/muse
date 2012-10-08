@@ -1,9 +1,18 @@
+08.10.2012:
+         More Song Type removal and midi import/export work, and other fixes: (Tim) 
+         * Improved: Multi-port (aka multi-channel) midi import and export, via Device Name, Port, or Instrument metas.
+           - MusE can now export a midi file and re-import exactly as it was, all ports + devices + instruments incl.
+           - Extra options for import/export added.
+           - Import midi now passes 'unabsorbed' meta events on to the track. They were discarded before - lost forever.
+           - Solved: Export midi now stores an instrument's Init sequence, instead of the old song type sysexes.
+           - MPEventList now has highly customized same-time sorting, helps 'cement' import/export events in place, such 
+              as controllers or program changes before notes, instrument metas before mode sysexes. (EventList NOT done.)
+         - Old bug: Fixed superfluous NULLS in meta texts in midi export.
+         - Old bug, annoying: Midi Import: parts are too short and 'events past end' indicator is on.
+         - TODO: Bug: Deicsonze: Midi track info patch popup: Screen all black until esc or click.
 27.09.2012:
          * Song type is now removed: Testing... first commit, more likely to come.  (Tim)
            Midi import tested seems OK so far with GM, GS, and XG files.
-           TODO: Exporting song type sysex - use instrument init list instead? Or store with parts? (Nah!)
-                 Or if all ports used in song are GM, GS, or XG, use those instead? 
-                 What about mixed? Try to use 'switch port' meta event to help?
            TODO: Instrument init sequences. Need some kind of editor. Need timing mechanism while in 'stop' mode. 
                  Was thinking these events should be in FRAMES or real time - not affected by tempo. Jack slow sync 
                   callback might help. (Also try to re-enable metronome precount - similar concept here!)

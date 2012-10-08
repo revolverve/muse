@@ -585,7 +585,6 @@ class DeicsOnze : public Mess {
   bool sysex(int length, const unsigned char* data, bool fromGui); 
   virtual bool sysex(int l, const unsigned char* d);
   
-  //virtual const char* getPatchName(int ch, int number, int) const; // REMOVE Tim. Song type removal.
   virtual const char* getPatchName(int ch, int number, bool) const; 
   virtual const MidiPatch* getPatchInfo(int, const MidiPatch *) const;
 

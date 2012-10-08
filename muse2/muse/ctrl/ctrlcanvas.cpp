@@ -943,13 +943,7 @@ void CtrlCanvas::newValRamp(int x1, int y1, int x2, int y2)
             if (type == MusECore::CTRL_PROGRAM)
             {
               if (lastpv == MusECore::CTRL_VAL_UNKNOWN)
-              {
-                // REMOVE Tim. Song type removal.
-                //if (MusEGlobal::song->mtype() == MT_GM)
-                //  event.setB(0xffff00 | (nval - 1));
-                //else  
-                  event.setB(nval - 1);
-              }
+                event.setB(nval - 1);
               else  
                 event.setB((lastpv & 0xffff00) | (nval - 1));
             }
@@ -992,12 +986,7 @@ void CtrlCanvas::changeValRamp(int x1, int y1, int x2, int y2)
                   if (type == MusECore::CTRL_PROGRAM)
                   {
                     if (event.dataB() == MusECore::CTRL_VAL_UNKNOWN)
-                    {
                       --nval;
-                      // REMOVE Tim. Song type removal.
-                      //if(MusEGlobal::song->mtype() == MT_GM)
-                      //  nval |= 0xffff00;
-                    }
                     else  
                       nval = (event.dataB() & 0xffff00) | (nval - 1);
                   }
@@ -1068,12 +1057,7 @@ void CtrlCanvas::changeVal(int x1, int x2, int y)
                         if(type == MusECore::CTRL_PROGRAM)
                         {
                           if(event.dataB() == MusECore::CTRL_VAL_UNKNOWN)
-                          {
                             --nval;
-                            // REMOVE Tim. Song type removal.
-                            //if(MusEGlobal::song->mtype() == MT_GM)
-                            //  nval |= 0xffff00;
-                          }
                           else  
                             nval = (event.dataB() & 0xffff00) | (nval - 1);
                         }
@@ -1170,12 +1154,7 @@ void CtrlCanvas::newVal(int x1, int y)
               if(event.dataB() == MusECore::CTRL_VAL_UNKNOWN)
               {
                 if(lastpv == MusECore::CTRL_VAL_UNKNOWN)
-                {
                   --nval;
-                  // REMOVE Tim. Song type removal.
-                  //if(MusEGlobal::song->mtype() == MT_GM)
-                  //  nval |= 0xffff00;
-                }
                 else  
                   nval = (lastpv & 0xffff00) | (nval - 1);
               }
@@ -1242,13 +1221,7 @@ void CtrlCanvas::newVal(int x1, int y)
               if(type == MusECore::CTRL_PROGRAM)
               {
                 if(lastpv == MusECore::CTRL_VAL_UNKNOWN)
-                {
-                  // REMOVE Tim. Song type removal.
-                  //if(MusEGlobal::song->mtype() == MT_GM)
-                  //  event.setB(0xffff00 | (newval - 1));
-                  //else  
-                    event.setB(newval - 1);
-                }
+                  event.setB(newval - 1);
                 else    
                   event.setB((lastpv & 0xffff00) | (newval - 1));
               }
@@ -1416,13 +1389,7 @@ void CtrlCanvas::newVal(int x1, int y1, int x2, int y2)
             if(type == MusECore::CTRL_PROGRAM)
             {
               if(lastpv == MusECore::CTRL_VAL_UNKNOWN)
-              {
-                // REMOVE Tim. Song type removal.
-                //if(MusEGlobal::song->mtype() == MT_GM)
-                //  event.setB(0xffff00 | (nval - 1));
-                //else  
-                  event.setB(nval - 1);
-              }
+                event.setB(nval - 1);
               else  
                 event.setB((lastpv & 0xffff00) | (nval - 1));
             }
