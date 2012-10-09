@@ -1,11 +1,14 @@
+09.10.2012:
+         - Fixed old fluidsynth bug: Drum patch numbers incorrect. (Tim)
+           Confusion due to special fluidsynth drum bank = 129. Changed FluidSynth::getFirstPatch, 
+            ::getNextPatch, and CTRL_PROGRAM section of ::setController. 
+         - Midi track info patches popup menu: Don't display category if empty. (Tim)
 08.10.2012:
          * Song type is now removed: (Tim)
            Midi import tested seems OK so far with GM, GS, and XG files.
            TODO: Instrument init sequences. Need some kind of editor. Need timing mechanism while in 'stop' mode. 
                  Was thinking these events should be in FRAMES or real time - not affected by tempo. Jack slow sync 
                   callback might help. (Also try to re-enable metronome precount - similar concept here!)
-           TODO: Verify patches popup/boxes display for proper operation. And everything else, bugs, CLEANUP etc...
-           
          * Improved: Multi-port (aka multi-channel) midi import and export, via Device Name, Port, or Instrument metas. (Tim)
            - MusE can now export a midi file and re-import exactly as it was, all ports + devices + instruments incl.
            - Extra options for import/export added.

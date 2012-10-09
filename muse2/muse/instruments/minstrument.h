@@ -47,7 +47,8 @@ class DrumMap;
 //---------------------------------------------------------
 
 struct Patch {
-      signed char typ;                     // 1 - GM  2 - GS  4 - XG
+      // REMOVE Tim. OBSOLETE. 
+      //signed char typ;                     // 1 - GM  2 - GS  4 - XG
       signed char hbank, lbank, prog;
       QString name;
       bool drum;

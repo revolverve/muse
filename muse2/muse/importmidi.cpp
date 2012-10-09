@@ -143,7 +143,7 @@ bool MusE::importMidi(const QString name, bool merge)
       
       MusECore::MidiFilePortMap* usedPortMap = mf.usedPortMap();
       bool dev_changed = false;
-      for(MusECore::ciMidiFilePort imp = usedPortMap->begin(); imp != usedPortMap->end(); ++imp) 
+      for(MusECore::iMidiFilePort imp = usedPortMap->begin(); imp != usedPortMap->end(); ++imp) 
       {
         MType midi_type = imp->second._midiType;
         QString instr_name = MusEGlobal::config.importInstrNameMetas ? imp->second._instrName : QString();
@@ -163,13 +163,14 @@ bool MusE::importMidi(const QString name, bool merge)
 
         int port = imp->first;
         MusECore::MidiPort* mp = &MusEGlobal::midiPorts[port];
+        MusECore::MidiDevice* md = mp->device();
         // Take care of assigning devices to empty ports here rather than in midifile.
         //if(MusEGlobal::config.importDevNameMetas)  // TODO
         {
-          if(!mp->device())
+          if(!md)
           {
             QString dev_name = imp->second._subst4DevName;
-            MusECore::MidiDevice* md = MusEGlobal::midiDevices.find(dev_name); // Find any type of midi device - HW, synth etc.
+            md = MusEGlobal::midiDevices.find(dev_name); // Find any type of midi device - HW, synth etc.
             if(md)
             {
               // TEST: Hopefully shouldn't require any routing saves/restorations as in midi port config set device name...
@@ -184,7 +185,7 @@ bool MusE::importMidi(const QString name, bool merge)
               printf("importMidi error: assign to empty port: device not found: %s\n", dev_name.toLatin1().constData());
           }
         }
-          
+
         MusECore::MidiInstrument* instr = 0;
         // Priority is exact named instrument over a typed instrument.
         // This allows a named instrument plus a typed sysex, and the name will take priority. 
@@ -198,10 +199,10 @@ bool MusE::importMidi(const QString name, bool merge)
         }
         else if(typed_instr)
         {
-         instr = typed_instr;
-         if(MusEGlobal::debugMsg)
-           printf("port:%d typed instrument found:%s\n",
-                   port, instr->iname().toLatin1().constData());
+        instr = typed_instr;
+        if(MusEGlobal::debugMsg)
+          printf("port:%d typed instrument found:%s\n",
+                  port, instr->iname().toLatin1().constData());
         }
         else if(def_instr)
         {
@@ -217,9 +218,20 @@ bool MusE::importMidi(const QString name, bool merge)
             printf("port:%d no named, typed, or default instrument found! Using:%s\n",
                     port, instr->iname().toLatin1().constData());
         }
-        // this overwrites any instrument set for this port:
-        if(mp->instrument() != instr)
-          mp->setInstrument(instr);
+        
+        // If the instrument is one of the three standard GM, GS, or XG, mark the usedPort as "ch 10 is drums".
+        // Otherwise it's anybody's guess what channel(s) drums are on.
+        // Code is a bit HACKISH just to accomplish passing this bool value to the next stage, where tracks are created. 
+        if(instr->midiType() != MT_UNKNOWN)
+          imp->second._isStandardDrums = true;
+          
+        // Set the device's instrument - ONLY for non-synths because they provide their own. 
+        if(!md || (md->deviceType() != MusECore::MidiDevice::SYNTH_MIDI))  
+        {
+          // this overwrites any instrument set for this port:
+          if(mp->instrument() != instr)
+            mp->setInstrument(instr);
+        }
       }
       
       if(dev_changed)
@@ -276,7 +288,7 @@ bool MusE::importMidi(const QString name, bool merge)
                         track->setOutPort(port);
 
                         MusECore::MidiPort* mport = &MusEGlobal::midiPorts[port];
-                        MusECore::MidiInstrument* instr = mport->instrument();
+                        //MusECore::MidiInstrument* instr = mport->instrument();
                         MusECore::EventList* mel = track->events();
                         buildMidiEventList(mel, el, track, division, first, false); // Don't do loops.
                         first = false;
@@ -284,7 +296,9 @@ bool MusE::importMidi(const QString name, bool merge)
                         // Comment Added by T356.
                         // Hmm. buildMidiEventList already takes care of this. 
                         // But it seems to work. How? Must test. 
-                        if (channel == 9 && instr->midiType() != MT_UNKNOWN) {
+                        //if (channel == 9 && instr->midiType() != MT_UNKNOWN) {
+                        MusECore::ciMidiFilePort imp = usedPortMap->find(port);
+                        if(imp != usedPortMap->end() && imp->second._isStandardDrums && channel == 9) { // A bit HACKISH, see above
                            if (MusEGlobal::config.importMidiNewStyleDrum)
                               track->setType(MusECore::Track::NEW_DRUM);
                            else

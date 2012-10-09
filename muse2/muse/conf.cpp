@@ -1509,7 +1509,8 @@ void MidiFileConfig::updateValues()
       {
       importDefaultInstr->clear();
       for(MusECore::iMidiInstrument i = MusECore::midiInstruments.begin(); i != MusECore::midiInstruments.end(); ++i) 
-        importDefaultInstr->addItem((*i)->iname());
+        if(!dynamic_cast<MusECore::SynthI*>(*i))      // Sorry, no synths for now.
+          importDefaultInstr->addItem((*i)->iname());
       int idx = importDefaultInstr->findText(MusEGlobal::config.importMidiDefaultInstr);
       if(idx != -1)
         importDefaultInstr->setCurrentIndex(idx);

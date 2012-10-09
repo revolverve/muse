@@ -44,11 +44,13 @@ class MidiInstrument;
 //---------------------------------------------------------
 
 struct MidiFilePort {
+  bool _isStandardDrums; 
   MType _midiType;
   QString _instrName;
   QString _subst4DevName;
   MidiFilePort() {
     _midiType = MT_UNKNOWN;
+    _isStandardDrums = false;
   }
 };
 

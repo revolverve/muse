@@ -1873,7 +1873,12 @@ void CtrlCanvas::setCurDrumPitch(int instrument)
         curDrumPitch = instrument;
       else // new style drummap mode
       {
-        if (drumedit->get_instrument_map()[instrument].tracks.contains(curTrack))
+        // Crash protection by Tim. 
+        // FIXME: Still, drum list is blank, editor can't edit. Other values of instrument or curDrumPitch just crash too.
+        // Seems only with drum tracks that were created by importing a midi file (then changed to use fluidsynth device?).
+        if(instrument == -1)  curDrumPitch = -1;   
+        
+        else if (drumedit->get_instrument_map()[instrument].tracks.contains(curTrack))
           curDrumPitch = drumedit->get_instrument_map()[instrument].pitch;
         else
           curDrumPitch = -2; // this means "invalid", but not "unused"
