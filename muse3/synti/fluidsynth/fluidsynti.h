@@ -198,5 +198,160 @@ struct FS_Helper //Only used to pass parameters when calling the loading thread
       int id;
       };
 
+// REMOVE Tim. fs. Added.
+
+// Our own declarations for structures we need for version 1:
+      
+/**
+ * Virtual SoundFont preset.
+ */
+
+struct fluid_preset_v1_t {
+  void* data;                                   /**< User supplied data */
+  fluid_sfont_t* sfont;                         /**< Parent virtual SoundFont */
+
+  /**
+   * Method to free a virtual SoundFont preset.
+   * @param preset Virtual SoundFont preset
+   * @return Should return 0
+   */
+  int (*free)(fluid_preset_t* preset);
+
+  /**
+   * Method to get a virtual SoundFont preset name.
+   * @param preset Virtual SoundFont preset
+   * @return Should return the name of the preset.  The returned string must be
+   *   valid for the duration of the virtual preset (or the duration of the
+   *   SoundFont, in the case of preset iteration).
+   */
+  char* (*get_name)(fluid_preset_t* preset);
+
+  /**
+   * Method to get a virtual SoundFont preset MIDI bank number.
+   * @param preset Virtual SoundFont preset
+   * @param return The bank number of the preset
+   */
+  int (*get_banknum)(fluid_preset_t* preset);
+
+  /**
+   * Method to get a virtual SoundFont preset MIDI program number.
+   * @param preset Virtual SoundFont preset
+   * @param return The program number of the preset
+   */
+  int (*get_num)(fluid_preset_t* preset);
+
+  /**
+   * Method to handle a noteon event (synthesize the instrument).
+   * @param preset Virtual SoundFont preset
+   * @param synth Synthesizer instance
+   * @param chan MIDI channel number of the note on event
+   * @param key MIDI note number (0-127)
+   * @param vel MIDI velocity (0-127)
+   * @return #FLUID_OK on success (0) or #FLUID_FAILED (-1) otherwise
+   *
+   * This method may be called from within synthesis context and therefore
+   * should be as efficient as possible and not perform any operations considered
+   * bad for realtime audio output (memory allocations and other OS calls).
+   *
+   * Call fluid_synth_alloc_voice() for every sample that has
+   * to be played. fluid_synth_alloc_voice() expects a pointer to a
+   * #fluid_sample_t structure and returns a pointer to the opaque
+   * #fluid_voice_t structure. To set or increment the values of a
+   * generator, use fluid_voice_gen_set() or fluid_voice_gen_incr(). When you are
+   * finished initializing the voice call fluid_voice_start() to
+   * start playing the synthesis voice.  Starting with FluidSynth 1.1.0 all voices
+   * created will be started at the same time.
+   */
+  int (*noteon)(fluid_preset_t* preset, fluid_synth_t* synth, int chan, int key, int vel);
+
+  /**
+   * Virtual SoundFont preset notify method.
+   * @param preset Virtual SoundFont preset
+   * @param reason #FLUID_PRESET_SELECTED or #FLUID_PRESET_UNSELECTED
+   * @param chan MIDI channel number
+   * @return Should return #FLUID_OK
+   *
+   * Implement this optional method if the preset needs to be notified about
+   * preset select and unselect events.
+   *
+   * This method may be called from within synthesis context and therefore
+   * should be as efficient as possible and not perform any operations considered
+   * bad for realtime audio output (memory allocations and other OS calls).
+   */
+  int (*notify)(fluid_preset_t* preset, int reason, int chan);
+};
+
+/**
+ * Virtual SoundFont instance structure.
+ */
+struct fluid_sfont_v1_t {
+  void* data;           /**< User defined data */
+  unsigned int id;      /**< SoundFont ID */
+
+  /**
+   * Method to free a virtual SoundFont bank.
+   * @param sfont Virtual SoundFont to free.
+   * @return Should return 0 when it was able to free all resources or non-zero
+   *   if some of the samples could not be freed because they are still in use,
+   *   in which case the free will be tried again later, until success.
+   */
+  int (*free)(fluid_sfont_t* sfont);
+
+  /**
+   * Method to return the name of a virtual SoundFont.
+   * @param sfont Virtual SoundFont
+   * @return The name of the virtual SoundFont.
+   */
+  char* (*get_name)(fluid_sfont_t* sfont);
+
+  /**
+   * Get a virtual SoundFont preset by bank and program numbers.
+   * @param sfont Virtual SoundFont
+   * @param bank MIDI bank number (0-16383)
+   * @param prenum MIDI preset number (0-127)
+   * @return Should return an allocated virtual preset or NULL if it could not
+   *   be found.
+   */
+  fluid_preset_t* (*get_preset)(fluid_sfont_t* sfont, unsigned int bank, unsigned int prenum);
+
+  /**
+   * Start virtual SoundFont preset iteration method.
+   * @param sfont Virtual SoundFont
+   *
+   * Starts/re-starts virtual preset iteration in a SoundFont.
+   */
+  void (*iteration_start)(fluid_sfont_t* sfont);
+
+  /**
+   * Virtual SoundFont preset iteration function.
+   * @param sfont Virtual SoundFont
+   * @param preset Caller supplied preset to fill in with current preset information
+   * @return 0 when no more presets are available, 1 otherwise
+   *
+   * Should store preset information to the caller supplied \a preset structure
+   * and advance the internal iteration state to the next preset for subsequent
+   * calls.
+   */
+  int (*iteration_next)(fluid_sfont_t* sfont, fluid_preset_t* preset);
+};
+
+
+// Our own wrappers for functions we need to look up with dlsym:
+
+// //char*(* fluid_preset_t::get_name_V1_t) (fluid_preset_t *preset)
+// typedef char* (*fluid_preset_t::get_name_V1_t)(fluid_preset_t* preset);
+// extern fluid_preset_t::get_name_V1_t fluid_preset_get_name_V1_fp;
+// 
+// char *(* get_name )(fluid_preset_t *preset);
+// typedef char* (*fluid_preset_get_name_V1_t)(fluid_preset_t* preset);
+// extern fluid_preset_get_name_V1_t fluid_preset_get_name_V1_fp;
+ 
+typedef const char* (*fluid_preset_get_name_v2_t)(fluid_preset_t *preset);
+extern fluid_preset_get_name_v2_t fluid_preset_get_name_v2_fp;
+      
+typedef fluid_preset_t* (*fluid_sfont_get_preset_v2_t)(fluid_sfont_t *sfont, int bank, int prenum);
+extern fluid_sfont_get_preset_v2_t fluid_sfont_get_preset_v2_fp;
+      
+      
 // static void* fontLoadThread(void* t); // moved to the implementation file -Orcan
 #endif /* __MUSE_FLUIDSYNTI_H__ */

@@ -30,6 +30,7 @@
  *
  */
 
+#include <dlfcn.h>
 #include <list>
 #include <iostream>
 
@@ -61,6 +62,9 @@ typedef std::pair<int, NoteSampleNameList_t> PatchNoteSampleNameInsertPair_t;
 typedef PatchNoteSampleNameList_t PatchNoteSampleNameList;
 #endif
 
+// Function pointers obtained with dlsym:
+fluid_preset_get_name_v2_t fluid_preset_get_name_v2_fp = NULL;  
+fluid_sfont_get_preset_v2_t fluid_sfont_get_preset_v2_fp = NULL;  
 
 FluidCtrl FluidSynth::fluidCtrl[] = {
       //{ "Expression", MusECore::CTRL_EXPRESSION, 0, 127 },
@@ -154,17 +158,22 @@ FluidSynth::~FluidSynth()
         if(err == -1)  
           std::cerr << DEBUG_ARGS << "Error unloading soundfont!" << fluid_synth_error(fluidsynth) << std::endl;
       }
-        
-      int err = delete_fluid_synth (fluidsynth);
+   
+// REMOVE Tim. fs. Changed. delete_fluid_synth() always returned FLUID_OK anyway, 
+//  there is no other return value. Therefore we can ignore any return value.
+//       int err = delete_fluid_synth (fluidsynth);
+      delete_fluid_synth (fluidsynth);
       if(gui)
         delete gui;
 
       if (initBuffer)
             delete [] initBuffer;
-      if (err == -1) {
-            std::cerr << DEBUG_ARGS << "error while destroying synth: " << fluid_synth_error(fluidsynth) << std::endl;
-            return;
-            }            
+// REMOVE Tim. fs. Changed. delete_fluid_synth() always returned FLUID_OK anyway, 
+//  there is no other return value. Therefore we can ignore any return value.
+//       if (err == -1) {
+//             std::cerr << DEBUG_ARGS << "error while destroying synth: " << fluid_synth_error(fluidsynth) << std::endl;
+//             return;
+//             }            
       }
 
 bool FluidSynth::init(const char* name)
@@ -1368,7 +1377,13 @@ const char* FluidSynth::getPatchName(int i, int, bool /*drum*/) const
       else {
             fluid_preset_t *preset = fluid_synth_get_channel_preset(fluidsynth, i);
             if (!preset) return "<unknown>";
-            return preset->get_name(preset);
+// REMOVE Tim. fs. Changed.
+//             return preset->get_name(preset);
+            // Is fluidsynth version 2 or higher loaded?
+            if(fluid_preset_get_name_v2_fp)
+              return fluid_preset_get_name_v2_fp(preset);
+            else
+              return ((fluid_preset_v1_t*)preset)->get_name(preset);
             }
       }
 //---------------------------------------------------------
@@ -1414,12 +1429,25 @@ const MidiPatch* FluidSynth::getFirstPatch (int channel) const
       if (!channels[channel].drumchannel) {
             for (unsigned bank = 0; bank < 128; ++bank) {
                   for (unsigned patch = 0; patch < 128; ++patch) {
-                        preset = sfont->get_preset (sfont, bank, patch);
+// REMOVE Tim. fs. Changed.
+//                         preset = sfont->get_preset (sfont, bank, patch);
+                        if(fluid_sfont_get_preset_v2_fp)
+                          preset = fluid_sfont_get_preset_v2_fp (sfont, bank, patch);
+                        else
+                          preset = ((fluid_sfont_v1_t*)sfont)->get_preset (sfont, bank, patch);
+                          
                         if (preset) {
                               midiPatch.hbank = bank;
                               midiPatch.lbank = 0xff;  // Off
                               midiPatch.prog = patch;
-                              midiPatch.name = preset->get_name (preset);
+// REMOVE Tim. fs. Changed.
+//                               midiPatch.name = preset->get_name (preset);
+                              // Is fluidsynth version 2 or higher loaded?
+                              if(fluid_preset_get_name_v2_fp)
+                                midiPatch.name = fluid_preset_get_name_v2_fp(preset);
+                              else
+                                midiPatch.name = ((fluid_preset_v1_t*)preset)->get_name (preset);
+                              
                               return &midiPatch;
                               }
                         }
@@ -1429,12 +1457,25 @@ const MidiPatch* FluidSynth::getFirstPatch (int channel) const
       else { //This is a drumchannel
             int bank = 128;
             for (unsigned patch = 0; patch < 128; ++patch) {
-                  preset = sfont->get_preset (sfont, bank, patch);
+// REMOVE Tim. fs. Changed.
+//                   preset = sfont->get_preset (sfont, bank, patch);
+                  if(fluid_sfont_get_preset_v2_fp)
+                    preset = fluid_sfont_get_preset_v2_fp (sfont, bank, patch);
+                  else
+                    preset = ((fluid_sfont_v1_t*)sfont)->get_preset (sfont, bank, patch);
+                          
                   if (preset) {
                         midiPatch.hbank = 0xff;  // Off
                         midiPatch.lbank = 0xff;  // Off
                         midiPatch.prog = patch;
-                        midiPatch.name = preset->get_name(preset);
+// REMOVE Tim. fs. Changed.
+//                         midiPatch.name = preset->get_name(preset);
+                              // Is fluidsynth version 2 or higher loaded?
+                              if(fluid_preset_get_name_v2_fp)
+                                midiPatch.name = fluid_preset_get_name_v2_fp(preset);
+                              else
+                                midiPatch.name = ((fluid_preset_v1_t*)preset)->get_name (preset);
+                              
                         return &midiPatch;
                         }
                   }
@@ -1466,13 +1507,26 @@ const MidiPatch* FluidSynth::getNextPatch (int channel, const MidiPatch* patch) 
 
             for (unsigned bank = patch->hbank; bank < 128; ++bank) {
                   for ( ; prog < 128; ++prog) {
-                        preset = sfont->get_preset (sfont, bank, prog);
+// REMOVE Tim. fs. Changed.
+//                         preset = sfont->get_preset (sfont, bank, prog);
+                        if(fluid_sfont_get_preset_v2_fp)
+                          preset = fluid_sfont_get_preset_v2_fp (sfont, bank, prog);
+                        else
+                          preset = ((fluid_sfont_v1_t*)sfont)->get_preset (sfont, bank, prog);
+                          
                         if (preset) {
                               //printf("Preset info: bank: %d prog: %d name: %s\n", bank, prog, preset->get_name(preset));
                               midiPatch.hbank = bank;
                               midiPatch.lbank = 0xff;  // Off
                               midiPatch.prog = prog;
-                              midiPatch.name = preset->get_name (preset);
+// REMOVE Tim. fs. Changed.
+//                               midiPatch.name = preset->get_name (preset);
+                              // Is fluidsynth version 2 or higher loaded?
+                              if(fluid_preset_get_name_v2_fp)
+                                midiPatch.name = fluid_preset_get_name_v2_fp(preset);
+                              else
+                                midiPatch.name = ((fluid_preset_v1_t*)preset)->get_name (preset);
+                              
                               return &midiPatch;
                               }
                         }
@@ -1483,13 +1537,26 @@ const MidiPatch* FluidSynth::getNextPatch (int channel, const MidiPatch* patch) 
             unsigned bank = 128;
             unsigned prog = patch->prog;
             for (prog = patch->prog + 1; prog < 128; ++prog) {
-                  preset = sfont->get_preset (sfont, bank, prog);
+// REMOVE Tim. fs. Changed.
+//                   preset = sfont->get_preset (sfont, bank, prog);
+                  if(fluid_sfont_get_preset_v2_fp)
+                    preset = fluid_sfont_get_preset_v2_fp (sfont, bank, prog);
+                  else
+                    preset = ((fluid_sfont_v1_t*)sfont)->get_preset (sfont, bank, prog);
+                    
                   if (preset) {
                         //printf("Preset info: bank: %d prog: %d name: %s\n",bank, prog, preset->get_name(preset));
                         midiPatch.hbank = 0xff;  // Off
                         midiPatch.lbank = 0xff;  // Off
                         midiPatch.prog = prog;
-                        midiPatch.name = preset->get_name (preset);
+// REMOVE Tim. fs. Changed.
+//                         midiPatch.name = preset->get_name (preset);
+                        // Is fluidsynth version 2 or higher loaded?
+                        if(fluid_preset_get_name_v2_fp)
+                          midiPatch.name = fluid_preset_get_name_v2_fp(preset);
+                        else
+                          midiPatch.name = ((fluid_preset_v1_t*)preset)->get_name (preset);
+                              
                         return &midiPatch;
                         }
                   }
@@ -1636,9 +1703,22 @@ static  QMutex globalFluidSynthMutex;
 
 static Mess* instantiate(unsigned long long /*parentWinId*/, const char* name, const MessConfig* config)
       {
-      printf("fluidsynth sampleRate %d\n", config->_sampleRate);
+      fprintf(stderr, "fluidsynti: sampleRate %d\n", config->_sampleRate);
       projPathPtr = QString(config->_projectPath);
 
+      int mj, mn, mc;
+      fluid_version(&mj, &mn, &mc);
+      fprintf(stderr, "fluidsynti: Loaded fluidsynth library version:%d.%d.%d\n", mj, mn, mc);
+
+      // Not in fluidsynth < 2.0. Dlsym'd. Check for existence first.
+      fluid_preset_get_name_v2_fp = reinterpret_cast<fluid_preset_get_name_v2_t>(dlsym(RTLD_DEFAULT, "fluid_preset_get_name"));
+      //if (FS_DEBUG)
+        fprintf(stderr, "fluidsynti: fluid_preset_get_name_v2_fp address:%p \n", fluid_preset_get_name_v2_fp);
+      
+      fluid_sfont_get_preset_v2_fp = reinterpret_cast<fluid_sfont_get_preset_v2_t>(dlsym(RTLD_DEFAULT, "fluid_sfont_get_preset"));
+      //if (FS_DEBUG)
+        fprintf(stderr, "fluidsynti: fluid_sfont_get_preset_v2_fp address:%p \n", fluid_sfont_get_preset_v2_fp);
+      
       FluidSynth* synth = new FluidSynth(config->_sampleRate, globalFluidSynthMutex);
       if (synth->init(name)) {
             delete synth;
